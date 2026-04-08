@@ -9,116 +9,181 @@ const HTML = `<!doctype html>
   <title>sip Worker Example</title>
   <style>
     :root { color-scheme: dark; }
-    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #0a0a0a; color: #fff; }
-    main { width: min(720px, calc(100vw - 2rem)); margin: 0 auto; padding: 3rem 0 4rem; }
-    h1 { margin: 0 0 0.75rem; font-size: clamp(2rem, 5vw, 3rem); }
-    p { color: #a1a1aa; line-height: 1.7; }
-    form { margin-top: 1.5rem; border: 1px solid #27272a; border-radius: 16px; overflow: hidden; background: #111; }
-    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid #27272a; }
-    label { display: block; padding: 1rem; border-right: 1px solid #27272a; }
-    label:last-child { border-right: none; }
-    span { display: block; margin-bottom: 0.5rem; color: #71717a; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-    input[type="number"] { width: 100%; box-sizing: border-box; border: 1px solid #3f3f46; border-radius: 10px; background: #09090b; color: #fff; padding: 0.8rem 0.9rem; font: inherit; }
-    .picker { padding: 1rem; border-bottom: 1px solid #27272a; }
-    input[type="file"] { width: 100%; padding: 0.8rem; border: 1px dashed #3f3f46; border-radius: 12px; background: #09090b; color: #d4d4d8; }
-    .actions { display: flex; gap: 0.75rem; align-items: center; padding: 1rem; }
-    button { border: none; border-radius: 12px; background: #fff; color: #000; padding: 0.85rem 1.1rem; font: inherit; font-weight: 700; cursor: pointer; }
-    #status { color: #a1a1aa; font-size: 0.9rem; }
-    #meta { margin-top: 1rem; color: #a1a1aa; font-size: 0.92rem; min-height: 1.4rem; }
-    img { display: block; width: 100%; margin-top: 1rem; border-radius: 16px; background: #111; }
-    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } label { border-right: none; border-bottom: 1px solid #27272a; } label:last-child { border-bottom: none; } }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, system-ui, sans-serif; background: #000; color: #fff; min-height: 100vh; }
+    main { width: min(680px, calc(100vw - 2rem)); margin: 0 auto; padding: 3rem 0 4rem; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .sub { color: #888; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .sub a { color: #f6821f; text-decoration: none; }
+
+    .card { border: 1px solid #222; border-radius: 12px; overflow: hidden; background: #0a0a0a; }
+
+    .preview { position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center;
+      background: repeating-conic-gradient(#151515 0% 25%, #0a0a0a 0% 50%) 0 0 / 16px 16px;
+      border-bottom: 1px solid #222; padding: 1rem; cursor: pointer; }
+    .preview img { max-width: 100%; max-height: 300px; border-radius: 6px; display: block; }
+    .preview-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.15s; }
+    .preview:hover .preview-overlay { opacity: 1; }
+    .preview-overlay span { font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem;
+      border: 1px solid #333; border-radius: 8px; background: #111; }
+    .preview-empty { color: #555; font-size: 0.9rem; }
+    #file-input { display: none; }
+
+    .fields { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #222; }
+    .field { padding: 0.75rem 1rem; border-right: 1px solid #222; }
+    .field:last-child { border-right: none; }
+    .field-label { display: block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #666; margin-bottom: 0.35rem; }
+    .field input { width: 100%; border: 1px solid #222; border-radius: 6px; background: #000;
+      color: #fff; padding: 0.45rem 0.6rem; font: inherit; font-size: 0.88rem; }
+    .field input:focus { border-color: rgba(246,130,31,0.4); outline: none; }
+
+    .actions { display: flex; gap: 0.6rem; align-items: center; padding: 0.75rem 1rem; }
+    .btn { border: none; border-radius: 8px; padding: 0.6rem 1rem; font: inherit; font-size: 0.88rem;
+      font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-primary:hover { background: #ddd; }
+    .btn-secondary { background: #111; color: #ccc; border: 1px solid #333; }
+    .btn-secondary:hover { background: #1a1a1a; }
+    .btn-secondary:disabled { opacity: 0.4; cursor: default; }
+    .btn svg { width: 14px; height: 14px; }
+    #status { color: #666; font-size: 0.85rem; margin-left: auto; }
+
+    .statusbar { padding: 0.4rem 0.85rem; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+      color: #555; background: #0a0a0a; border-top: 1px solid #222; min-height: 1.6rem; }
+
+    .output-area { min-height: 100px; display: flex; align-items: center; justify-content: center;
+      background: repeating-conic-gradient(#151515 0% 25%, #0a0a0a 0% 50%) 0 0 / 16px 16px;
+      padding: 1rem; }
+    .output-area img { max-width: 100%; max-height: 400px; border-radius: 6px; display: block; }
+    .output-empty { color: #333; font-size: 0.85rem; }
+
+    .spinner { width: 20px; height: 20px; border: 2px solid #222; border-top-color: #f6821f;
+      border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-card { margin-top: 1.5rem; }
+
+    @media (max-width: 600px) {
+      .fields { grid-template-columns: 1fr; }
+      .field { border-right: none; border-bottom: 1px solid #222; }
+      .field:last-child { border-bottom: none; }
+    }
   </style>
 </head>
 <body>
   <main>
     <h1>sip Worker Example</h1>
-    <p>This page uploads the selected JPEG or PNG as the raw request body, resizes it inside a Cloudflare Worker, and returns the JPEG with measured metadata headers.</p>
-    <form id="form">
-      <div class="picker">
-        <input id="file" type="file" accept="image/jpeg,image/png" required>
+    <p class="sub">Upload an image and this Cloudflare Worker will resize it using <a href="https://github.com/standardagents/sip">sip</a>.</p>
+
+    <div class="card">
+      <div class="preview" id="input-preview" onclick="document.getElementById('file-input').click()">
+        <span class="preview-empty">Click to select an image</span>
+        <div class="preview-overlay"><span>Change image</span></div>
       </div>
-      <div class="grid">
-        <label><span>Max width</span><input id="width" type="number" min="1" value="1024"></label>
-        <label><span>Max height</span><input id="height" type="number" min="1" value="1024"></label>
-        <label><span>Quality</span><input id="quality" type="number" min="1" max="100" value="82"></label>
+      <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+      <div class="statusbar" id="input-info"></div>
+      <div class="fields">
+        <div class="field"><span class="field-label">Max width</span><input id="w" type="number" min="1" value="1024"></div>
+        <div class="field"><span class="field-label">Max height</span><input id="h" type="number" min="1" value="1024"></div>
+        <div class="field"><span class="field-label">Quality</span><input id="q" type="number" min="1" max="100" value="82"></div>
       </div>
       <div class="actions">
-        <button type="submit">Resize image</button>
-        <div id="status">Waiting for an image.</div>
+        <button class="btn btn-primary" id="submit-btn" disabled>Resize</button>
+        <a class="btn btn-secondary" id="download-btn" style="display:none" download="sip-output.jpg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </a>
+        <span id="status"></span>
       </div>
-    </form>
-    <div id="meta"></div>
-    <img id="result" alt="" hidden>
+    </div>
+
+    <div class="card result-card" id="result-card" style="display:none">
+      <div class="output-area" id="output-area">
+        <span class="output-empty">Result will appear here</span>
+      </div>
+      <div class="statusbar" id="output-info"></div>
+    </div>
   </main>
   <script>
-    const form = document.getElementById('form');
-    const fileInput = document.getElementById('file');
-    const widthInput = document.getElementById('width');
-    const heightInput = document.getElementById('height');
-    const qualityInput = document.getElementById('quality');
+    const fileInput = document.getElementById('file-input');
+    const inputPreview = document.getElementById('input-preview');
+    const inputInfo = document.getElementById('input-info');
+    const submitBtn = document.getElementById('submit-btn');
+    const downloadBtn = document.getElementById('download-btn');
     const status = document.getElementById('status');
-    const meta = document.getElementById('meta');
-    const result = document.getElementById('result');
-    let objectUrl = '';
+    const resultCard = document.getElementById('result-card');
+    const outputArea = document.getElementById('output-area');
+    const outputInfo = document.getElementById('output-info');
+    let outputUrl = '';
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    function formatBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+      return (b / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    fileInput.addEventListener('change', () => {
       const file = fileInput.files?.[0];
-      if (!file) {
-        status.textContent = 'Select an image first.';
-        return;
-      }
+      if (!file) return;
+      submitBtn.disabled = false;
 
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-        objectUrl = '';
-      }
+      // Show input preview
+      const url = URL.createObjectURL(file);
+      inputPreview.innerHTML = '<img src="' + url + '" alt="Input"><div class="preview-overlay"><span>Change image</span></div>';
+      inputInfo.textContent = file.type.replace('image/', '').toUpperCase() + ' — ' + formatBytes(file.size);
 
-      result.hidden = true;
-      meta.textContent = '';
+      // Clear previous result
+      if (outputUrl) { URL.revokeObjectURL(outputUrl); outputUrl = ''; }
+      resultCard.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      status.textContent = '';
+      outputInfo.textContent = '';
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      if (outputUrl) { URL.revokeObjectURL(outputUrl); outputUrl = ''; }
+      resultCard.style.display = '';
+      outputArea.innerHTML = '<div class="spinner"></div>';
+      outputInfo.textContent = '';
+      downloadBtn.style.display = 'none';
       status.textContent = 'Processing...';
 
       const params = new URLSearchParams({
-        width: widthInput.value,
-        height: heightInput.value,
-        quality: qualityInput.value,
+        width: document.getElementById('w').value,
+        height: document.getElementById('h').value,
+        quality: document.getElementById('q').value,
       });
 
       try {
-        const response = await fetch('/api/process?' + params.toString(), {
+        const res = await fetch('/api/process?' + params, {
           method: 'POST',
-          headers: {
-            'content-type': file.type || 'application/octet-stream',
-          },
+          headers: { 'content-type': file.type || 'application/octet-stream' },
           body: file,
         });
 
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text || 'Processing failed');
-        }
+        if (!res.ok) throw new Error(await res.text() || 'Processing failed');
 
-        const blob = await response.blob();
-        objectUrl = URL.createObjectURL(blob);
-        result.src = objectUrl;
-        result.hidden = false;
+        const blob = await res.blob();
+        outputUrl = URL.createObjectURL(blob);
+        outputArea.innerHTML = '<img src="' + outputUrl + '" alt="Output">';
+
+        const outW = res.headers.get('X-Output-Width');
+        const outH = res.headers.get('X-Output-Height');
+        const outBytes = Number(res.headers.get('X-Output-Bytes'));
+        const peak = Number(res.headers.get('X-Peak-Pipeline-Bytes'));
+        outputInfo.textContent = 'Output: JPEG ' + outW + '×' + outH + ' — ' + formatBytes(outBytes) + ' — peak sip memory ' + formatBytes(peak);
+
+        downloadBtn.href = outputUrl;
+        downloadBtn.style.display = '';
         status.textContent = 'Done.';
-        meta.textContent =
-          'Input: ' +
-          response.headers.get('X-Input-Format') +
-          ' ' +
-          response.headers.get('X-Input-Width') +
-          'x' +
-          response.headers.get('X-Input-Height') +
-          ' • Output: JPEG ' +
-          response.headers.get('X-Output-Width') +
-          'x' +
-          response.headers.get('X-Output-Height') +
-          ' • Peak SIP memory: ' +
-          response.headers.get('X-Peak-Pipeline-Bytes');
-      } catch (error) {
-        status.textContent = 'Processing failed.';
-        meta.textContent = error instanceof Error ? error.message : String(error);
+      } catch (err) {
+        outputArea.innerHTML = '<span class="output-empty">' + (err.message || 'Processing failed') + '</span>';
+        status.textContent = '';
       }
     });
   </script>
