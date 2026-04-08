@@ -84,7 +84,7 @@ const HTML = `<!doctype html>
     <div class="card">
       <div class="preview" id="input-preview" onclick="document.getElementById('file-input').click()">
         <span class="preview-empty">Click to select an image</span>
-        <div class="preview-overlay"><span>Change image</span></div>
+        <div class="preview-overlay"><span>Select an image</span></div>
       </div>
       <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
       <div class="statusbar" id="input-info"></div>
@@ -135,7 +135,7 @@ const HTML = `<!doctype html>
 
       // Show input preview
       const url = URL.createObjectURL(file);
-      inputPreview.innerHTML = '<img src="' + url + '" alt="Input"><div class="preview-overlay"><span>Change image</span></div>';
+      inputPreview.innerHTML = '<img src="' + url + '" alt="Input"><div class="preview-overlay"><span>Select an image</span></div>';
       inputInfo.textContent = file.type.replace('image/', '').toUpperCase() + ' — ' + formatBytes(file.size);
 
       // Clear previous result
