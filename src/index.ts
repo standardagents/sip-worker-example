@@ -7,12 +7,14 @@ const HTML = `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>sip Worker Example</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5140 3870'%3E%3Cpath fill='%23fff' d='M3270 3649c-260-28-661-116-934-205-289-95-575-213-866-359-564-282-937-566-1063-809-27-53-31-71-32-141 0-74 4-91 59-230 119-306 305-632 502-881 157-200 422-450 604-570 165-110 445-252 590-301 85-28 348-25 495 6 549 116 1166 452 1303 709 75 141 187 471 231 683 16 80 35 158 41 173 17 44 51 81 178 186 134 111 284 265 373 382 33 45 89 140 124 212 101 206 135 380 109 553-25 173-67 264-172 375-108 114-216 159-382 159-144 0-253-35-380-121-34-23-65-39-68-35-4 3-21 30-38 58-39 67-97 111-182 138-56 18-95 22-237 25-93 1-208-2-255-7z'/%3E%3C/svg%3E">
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Inter, system-ui, sans-serif; background: #000; color: #fff; min-height: 100vh; }
     main { width: min(680px, calc(100vw - 2rem)); margin: 0 auto; padding: 3rem 0 4rem; }
-    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem; }
+    .logo { height: 1.6em; width: auto; filter: invert(1); opacity: 0.9; }
     .sub { color: #888; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem; }
     .sub a { color: #f6821f; text-decoration: none; }
 
@@ -74,7 +76,7 @@ const HTML = `<!doctype html>
 </head>
 <body>
   <main>
-    <h1>sip Worker Example</h1>
+    <h1><svg class="logo" viewBox="0 0 5140 3870" xmlns="http://www.w3.org/2000/svg"><path fill="#000" d="M3270 3649c-260-28-661-116-934-205-289-95-575-213-866-359-564-282-937-566-1063-809-27-53-31-71-32-141 0-74 4-91 59-230 119-306 305-632 502-881 157-200 422-450 604-570 165-110 445-252 590-301 85-28 348-25 495 6 549 116 1166 452 1303 709 75 141 187 471 231 683 16 80 35 158 41 173 17 44 51 81 178 186 134 111 284 265 373 382 33 45 89 140 124 212 101 206 135 380 109 553-25 173-67 264-172 375-108 114-216 159-382 159-144 0-253-35-380-121-34-23-65-39-68-35-4 3-21 30-38 58-39 67-97 111-182 138-56 18-95 22-237 25-93 1-208-2-255-7z"/></svg>sip Worker Example</h1>
     <p class="sub">Upload an image and this Cloudflare Worker will resize it using <a href="https://github.com/standardagents/sip">sip</a>.</p>
 
     <div class="card">
