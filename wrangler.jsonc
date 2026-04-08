@@ -2,5 +2,8 @@
   "name": "sip-worker-example",
   "main": "./src/index.ts",
   "compatibility_date": "2026-04-08",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "rules": [
+    { "type": "Text", "globs": ["**/*.svg"] }
+  ]
 }
