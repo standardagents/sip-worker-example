@@ -3,6 +3,11 @@
 This is a standalone Worker template that uses `@standardagents/sip` on the
 raw request-body path.
 
+The Worker entry uses the workerd-friendly `await ready()` setup, so there is no
+manual WASM loader wiring in user code.
+
+It is pinned to the published `@standardagents/sip@1.0.1` package.
+
 ## Local development
 
 ```bash

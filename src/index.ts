@@ -1,5 +1,4 @@
-import sipWasm from '../vendor/sip/sip.wasm';
-import { collect, inspect, ready, transform } from '../vendor/sip/index.js';
+import { collect, inspect, ready, transform } from '@standardagents/sip';
 import LOGO_SVG from './sip-logo.svg';
 
 const HTML = `<!doctype html>
@@ -204,7 +203,7 @@ function getOptions(url: URL) {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    await ready({ wasm: sipWasm });
+    await ready();
 
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/logo.svg') {
